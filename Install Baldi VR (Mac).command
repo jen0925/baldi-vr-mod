@@ -19,15 +19,37 @@ clear 2>/dev/null || true
 echo "Baldi VR mod installer"
 echo "This takes about 30 to 60 minutes the first time. Keep this window open."
 mkdir -p "$WORK"
+# Only one installer at a time.
+LOCK="$WORK/.running"
+if [ -f "$LOCK" ] && kill -0 "$(cat "$LOCK")" 2>/dev/null; then
+    fail "The installer is already running in another window. Use that one."
+fi
+echo $$ > "$LOCK"
+trap 'rm -f "$LOCK"' EXIT
 
-step "1 of 7: Checking Unity"
+step "1 of 7: Getting Unity (free; the first time this is a big download)"
+HUB="/Applications/Unity Hub.app/Contents/MacOS/Unity Hub"
 if [ ! -x "$UNITY" ] || [ ! -d "$ANDROID" ]; then
-    echo "You need Unity 2020.3.48f1 with Android Build Support."
-    echo "Unity Hub will open now. Install that version and tick"
-    echo "'Android Build Support' (with OpenJDK and Android SDK & NDK)."
-    echo "Then double-click this installer again."
-    open "unityhub://2020.3.48f1/b805b124c6b7" || open "https://unity.com/download"
-    fail "Unity 2020.3.48f1 with Android Build Support is not installed yet."
+    if [ ! -x "$HUB" ]; then
+        echo "Downloading Unity Hub..."
+        HUB_ARCH=$( [ "$(uname -m)" = "arm64" ] && echo arm64 || echo x64 )
+        curl -L --fail -o "$WORK/UnityHub.dmg" "https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup-$HUB_ARCH.dmg" || fail "Couldn't download Unity Hub. Check the internet."
+        MOUNT="$(hdiutil attach -nobrowse -noautoopen "$WORK/UnityHub.dmg" | awk -F'\t' '/Volumes/ {print $NF; exit}')"
+        cp -R "$MOUNT/Unity Hub.app" /Applications/ || fail "Couldn't copy Unity Hub into Applications."
+        hdiutil detach -quiet "$MOUNT" || true
+    fi
+    # This Unity version runs through Rosetta on Apple chips.
+    if [ "$(uname -m)" = "arm64" ] && ! /usr/bin/pgrep -q oahd; then
+        echo "Your Mac needs Rosetta for Unity. It may ask for your password."
+        softwareupdate --install-rosetta --agree-to-license || true
+    fi
+    echo "Installing Unity 2020.3.48f1 with Android support. This takes a while..."
+    if [ ! -x "$UNITY" ]; then
+        "$HUB" -- --headless install --version 2020.3.48f1 --changeset b805b124c6b7 --architecture x86_64 --module android android-sdk-ndk-tools android-open-jdk --childModules || true
+    else
+        "$HUB" -- --headless install-modules --version 2020.3.48f1 --module android android-sdk-ndk-tools android-open-jdk --childModules || true
+    fi
+    [ -x "$UNITY" ] && [ -d "$ANDROID" ] || fail "Unity didn't finish installing. Open Unity Hub, install 2020.3.48f1 with Android Build Support, then double-click this again."
 fi
 echo "Unity is ready."
 
@@ -113,7 +135,15 @@ echo "Unity is working in the background. It's slow the first time, that's norma
 rm -f "$PROJECT/Temp/UnityLockfile"
 "$UNITY" -batchmode -quit -projectPath "$PROJECT" -buildTarget Android -executeMethod ModSetup.SetUpAndBuild -logFile "$WORK/build.txt" || true
 APK="$WORK/Build/apk/BaldiVR.apk"
-[ -f "$APK" ] || fail "The build didn't finish. The details are in $WORK/build.txt"
+if [ ! -f "$APK" ]; then
+    if grep -qi "license" "$WORK/build.txt"; then
+        echo "Unity needs you signed in to a free Unity account (one time only)."
+        echo "Unity Hub is opening: sign in or make a free account, then double-click this again."
+        open -a "Unity Hub" || true
+        fail "Sign in to Unity Hub first."
+    fi
+    fail "The build didn't finish. The details are in $WORK/build.txt"
+fi
 echo "Built."
 
 [ -n "$BALDIVR_NOINSTALL" ] && { echo "Built: $APK"; exit 0; }
