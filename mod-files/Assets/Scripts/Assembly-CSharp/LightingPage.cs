@@ -6,8 +6,8 @@ using UnityEngine.SceneManagement;
 // The Lighting pages in the settings (Jen's son's request), after Graphics:
 // Dynamic (the lit-up school: lamp pools, window-lit walls, depth),
 // Filmmaker mode (moodier and cinematic), Normal (off: the game's own
-// light, nothing added), then the extra looks, Snow day to Eclipse, three
-// to a page (Lighting 2 to Lighting 6). One is on at a time, and it is
+// light, nothing added), and on Lighting 2, Plus style (the clean, bright,
+// simple look of Baldi's Basics Plus). One is on at a time, and it is
 // remembered. The school's shaders read it as _BaldiLightMode
 // (Shader/BaldiCommon.cginc). Each page is the Graphics page copied, with its
 // own title and ticks.
@@ -15,17 +15,15 @@ public class LightingPage : MonoBehaviour
 {
 	private const string Saved = "BaldiVRLighting";
 
-	private static readonly string[] Names = { "Normal (off)", "Dynamic", "Filmmaker mode", "Snow day", "Halloween", "Christmas", "Space", "Alarm", "Candle", "Hospital", "Sunrise", "Infrared", "Comic", "Ghost", "Lava", "Arcade CRT", "Eclipse" };
+	private static readonly string[] Names = { "Normal (off)", "Dynamic", "Filmmaker mode", "Snow day", "Halloween", "Christmas", "Space", "Alarm", "Candle", "Hospital", "Sunrise", "Infrared", "Comic", "Ghost", "Lava", "Arcade CRT", "Eclipse", "Plus style" };
 
 	// Each page's ticks top to bottom (-1: that row is not used).
+	// Each page's ticks top to bottom (-1: that row is not used). Jen's son
+	// kept Dynamic, Filmmaker mode and Normal, and added Plus style.
 	private static readonly int[][] Pages =
 	{
 		new[] { 1, 2, 0 },
-		new[] { 3, 4, 5 },
-		new[] { 6, 7, 8 },
-		new[] { 9, 10, 11 },
-		new[] { 12, 13, 14 },
-		new[] { 15, 16, -1 },
+		new[] { 17, -1, -1 },
 	};
 
 	private int[] Order;
@@ -38,7 +36,7 @@ public class LightingPage : MonoBehaviour
 	private static void Install()
 	{
 		Mode = PlayerPrefs.GetInt(Saved, 1);
-		if (Mode != 2 && Mode != 15) Mode = 1;
+		if (Mode != 0 && Mode != 2 && Mode != 17) Mode = 1;
 		Shader.SetGlobalFloat("_BaldiLightMode", Mode);
 		SceneManager.sceneLoaded += (scene, mode) => AddPages();
 		AddPages();

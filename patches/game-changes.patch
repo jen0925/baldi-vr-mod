@@ -5602,9 +5602,23 @@
 +		VRRig.PadOpen = false;
  		MusicManager.OnMidiLoop -= MidiLoop;
  	}
-@@ -310,4 +314,27 @@
- 			return;
+@@ -122,7 +126,8 @@
+ 			if (cbm != null && !cbm.spoopMode)
+ 			{
++				// VR mod (Jen's son): the whole Remastered song from the start; the
++				// game held back two of its parts until a couple of problems were
++				// answered, which sounded like Classic's plain one.
+ 				Singleton<MusicManager>.Instance.PlayMidi("learnNew", loop: true);
+-				Singleton<MusicManager>.Instance.MidiPlayer.MPTK_ChannelEnableSet(3, enable: false);
+-				Singleton<MusicManager>.Instance.MidiPlayer.MPTK_ChannelEnableSet(4, enable: false);
+ 			}
  		}
+@@ -307,5 +312,28 @@
+ 	{
+ 		if (finished || waiting)
++		{
++			return;
++		}
 +		if (submission == "0035")
 +		{
 +			// Mod: opens the debug menu once the pad has closed. It does not turn
@@ -5619,18 +5633,16 @@
 +			return;
 +		}
 +		if (submission == "0036" && Singleton<BaseGameManager>.Instance is ClassicNullManager nullGame)
-+		{
+ 		{
 +			// Mod: skip to just before the Null boss (ClassicNullManager).
 +			nullGame.SkipToBoss();
 +			Close(0.5f);
 +			waiting = true;
 +			problemTxt.text = "BOSS";
 +			baldiMan.FlushQueue(endCurrent: true);
-+			return;
-+		}
- 		if (submission == "04281989")
- 		{
-@@ -510,4 +537,8 @@
+ 			return;
+ 		}
+@@ -510,4 +538,8 @@
  			Singleton<CoreGameManager>.Instance.Quit();
  		}
 +		if (openDebug)

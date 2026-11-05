@@ -30,7 +30,8 @@ fixed3 BaldiTile(float2 tile)
 // window-lit walls, depth; 2 Filmmaker - a moodier, cinematic grade on top.
 // 3 to 16 are the extra looks (Jen's son): Snow day, Halloween, Christmas,
 // Space, Alarm, Candle, Hospital, Sunrise, Infrared, Comic, Ghost, Lava,
-// Arcade CRT and Eclipse, each the Dynamic light turned into its own look.
+// Arcade CRT and Eclipse, each the Dynamic light turned into its own look;
+// 17 is Plus style, the clean, bright look of Baldi's Basics Plus.
 float _BaldiLightMode;
 
 float BaldiHash(float2 at)
@@ -147,6 +148,14 @@ fixed3 BaldiLook(fixed3 lit, fixed3 light, float near, float hasSurface, float3 
         float r = length(sp);
         o = lit * 0.12 + light * fixed3(1.2, 0.9, 0.6) * exp(-pow((r - 0.85) * 7.0, 2.0)) * 0.8;
     }
+    else if (mode == 17)
+    {
+        // Plus style: Baldi's Basics Plus - clean, bright and even, no lamp
+        // pools or moody darks, a slightly cool white, and walls only a touch
+        // lighter or darker by which way they face so corners still read.
+        o = (light * 0.45 + 0.6) * fixed3(0.99, 1.0, 1.03) * (1.0 + 0.04 * worldNormal.x - 0.03 * worldNormal.z);
+        return o;
+    }
     return o * (1.0 + 0.08 * (1.0 - o)) / (1.0 + 0.05 * o);
 }
 
@@ -228,6 +237,12 @@ fixed3 BaldiSaturate(fixed3 c, float amount)
         c = h < 0.33 ? lerp(fixed3(0.02, 0.02, 0.25), fixed3(0.45, 0.05, 0.6), h * 3.0)
           : h < 0.66 ? lerp(fixed3(0.45, 0.05, 0.6), fixed3(1.0, 0.2, 0.05), h * 3.0 - 1.0)
           : lerp(fixed3(1.0, 0.2, 0.05), fixed3(1.0, 0.95, 0.3), h * 3.0 - 2.0);
+    }
+    else if (mode == 17)
+    {
+        // Plus style: clean, slightly bolder colour.
+        luma = dot(c, fixed3(0.299, 0.587, 0.114));
+        c = lerp(luma.xxx, c, 1.12);
     }
     else if (mode == 12)
     {
