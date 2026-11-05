@@ -21,22 +21,16 @@ Remastered. All credit for the game goes to **Basically Games**.
 
 ## Install (Mac)
 
-1. **Get the game.** Have Baldi's Basics Classic Remastered on your Mac.
-2. **Install Unity once.** Install Unity Hub, then Unity **2020.3.48f1** with
-   **Android Build Support** (tick OpenJDK and Android SDK & NDK too). If you
-   skip this, the installer opens Unity Hub for you.
-3. **Download this mod.** Click the green **Code** button above, then
-   **Download ZIP**, and unzip it.
-4. **Run the installer.** Double-click **Install Baldi VR (Mac).command**. If
-   your Mac blocks it, right-click it, choose **Open**, and press **Open** again.
-   It finds your copy of the game. If it can't, drag the game into the window
-   and press Return.
-5. **Wait.** It unpacks your copy, adds the mod and builds the Quest app. That
-   takes about 10 to 40 minutes the first time.
-6. **Plug in your Quest** with a USB-C cable when it asks, put it on and press
-   **Allow**. It installs the app by itself.
-7. **Play.** On the Quest, open your **App Library**, set the filter to
-   **Unknown Sources**, and open **Baldi's Basics Private**.
+You need your own copy of the game, and **Unity 2020.3.48f1 with Android Build
+Support** (the installer opens Unity Hub for you if it's missing).
+
+1. Click the green **Code** button above, then **Download ZIP**, and unzip it.
+2. Double-click **Install Baldi VR (Mac).command**. It finds your game and builds
+   the app.
+3. Plug in your Quest when it asks, and press **Allow**.
+
+Then play **Baldi's Basics Private** from your Quest's App Library (filter:
+**Unknown Sources**).
 
 ## How it works
 
