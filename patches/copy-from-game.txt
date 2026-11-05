@@ -1,0 +1,3 @@
+Assets/StreamingAssets/Subtitles_En.json	Assets/Resources/Localization/Subtitles_En.json
+Assets/StreamingAssets/Subtitles_Fr.json	Assets/Resources/Localization/Subtitles_Fr.json
+Assets/Texture2D/YCTP_Base.png	Assets/Resources/VR/YCTP_Base.png
