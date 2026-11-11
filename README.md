@@ -4,8 +4,6 @@ Play Baldi's Basics Classic Remastered in VR on the Meta Quest 2.
 
 You need your own copy of the game. All credit for Baldi goes to Basically Games.
 
-You also need **Unity**, a free and trusted tool that game makers use. The installer gets it for you from Unity's official website.
-
 ## Install
 
 1. Click the green **Code** button, then **Download ZIP**.
@@ -14,6 +12,8 @@ You also need **Unity**, a free and trusted tool that game makers use. The insta
 3. Plug in your Quest when it asks, and press **Allow**.
 
 It only takes a few minutes, but longer the first time if it has to download Unity.
+
+You also need **Unity**, a free and trusted tool that game makers use. The installer gets it for you from Unity's official website.
 
 Play **Baldi's Basics Private** from your Quest's App Library (under **Unknown Sources**).
 
