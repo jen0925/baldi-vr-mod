@@ -11,7 +11,7 @@ You need your own copy of the game. All credit for Baldi goes to Basically Games
 2. Double-click **Install Baldi VR (Mac)** or **Install Baldi VR (Windows)**.
 3. Plug in your Quest when it asks, and press **Allow**.
 
-The first time takes 30 to 60 minutes.
+It only takes a few minutes, but longer the first time if it has to download Unity.
 
 Play **Baldi's Basics Private** from your Quest's App Library (under **Unknown Sources**).
 
