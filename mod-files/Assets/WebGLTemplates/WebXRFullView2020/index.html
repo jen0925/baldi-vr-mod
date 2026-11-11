@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity WebGL Player | {{{ PRODUCT_NAME }}}</title>
+    <meta name="description" content="Private Baldi VR mod. All credit to Basically Games.">
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+  
+    <style>
+      /* Baldi VR: the game is 4:3, so keep it 4:3 and centred instead of stretched,
+         and keep the page's footer off the game's own buttons. */
+      html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+      #unity-container { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+      #unity-canvas-container { width: min(100vw, calc(100vh * 4 / 3)) !important; height: min(100vh, calc(100vw * 3 / 4)) !important; }
+      #unity-footer { position: fixed; top: 10px; right: 10px; bottom: auto; width: auto; background: none; }
+      #unity-footer > *:not(#entervr) { display: none !important; }
+      #entervr:enabled, #entervr:disabled { width: 110px; height: 56px; font: bold 26px sans-serif; border-radius: 10px; color: #fff; }
+    </style>
+  </head>
+  <body>
+    <div id="unity-container">
+      <div id="unity-canvas-container" style="width: 100%; height: 100%;">
+        <canvas id="unity-canvas" style="width: 100%; height: 100%;"></canvas>
+      </div>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
+      </div>
+      <div id="unity-footer">
+        <div id="unity-webgl-logo"></div>
+        <button id="entervr" value="Enter VR" disabled>VR</button>
+        <button id="enterar" value="Enter AR" disabled>AR</button>
+        <div id="unity-webxr-link">Using <a href="https://github.com/De-Panther/unity-webxr-export" target="_blank" title="WebXR Export">WebXR Export</a></div>
+        <div id="unity-build-title">{{{ PRODUCT_NAME }}}</div>
+      </div>
+    </div>
+    <script>
+      // As many frames a second as the headset can show (the Quest 2 goes up
+      // to 120), with the edges of the view drawn a little coarser so it keeps up.
+      if (navigator.xr && navigator.xr.requestSession) {
+        var requestSession = navigator.xr.requestSession.bind(navigator.xr);
+        navigator.xr.requestSession = function (mode, options) {
+          return requestSession(mode, options).then(function (session) {
+            var rates = session.supportedFrameRates;
+            if (rates && rates.length && session.updateTargetFrameRate) {
+              session.updateTargetFrameRate(Math.max.apply(null, rates)).catch(function () {});
+            }
+            var updateRenderState = session.updateRenderState.bind(session);
+            session.updateRenderState = function (state) {
+              if (state && state.baseLayer && "fixedFoveation" in state.baseLayer) state.baseLayer.fixedFoveation = 1;
+              return updateRenderState(state);
+            };
+            return session;
+          });
+        };
+      }
+    </script>
+    <script>
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/{{{ LOADER_FILENAME }}}";
+      var config = {
+        dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
+        frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
+        codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
+#if MEMORY_FILENAME
+        memoryUrl: buildUrl + "/{{{ MEMORY_FILENAME }}}",
+#endif
+#if SYMBOLS_FILENAME
+        symbolsUrl: buildUrl + "/{{{ SYMBOLS_FILENAME }}}",
+#endif
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "{{{ COMPANY_NAME }}}",
+        productName: "{{{ PRODUCT_NAME }}}",
+        productVersion: "{{{ PRODUCT_VERSION }}}",
+      };
+
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var canvasContainer = document.querySelector("#unity-canvas-container");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+      var unityInstance = null;
+      
+
+#if BACKGROUND_FILENAME
+      canvas.style.background = "url('" + buildUrl + "/{{{ BACKGROUND_FILENAME.replace(/'/g, '%27') }}}') center / cover";
+#endif
+      loadingBar.style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          progressBarFull.style.width = 100 * progress + "%";
+        }).then((instance) => {
+          unityInstance = instance;
+          loadingBar.style.display = "none";
+          if (fullscreenButton)
+          {
+            fullscreenButton.onclick = () => {
+              unityInstance.SetFullscreen(1);
+            };
+          }
+        }).catch((message) => {
+          alert(message);
+        });
+      };
+      document.body.appendChild(script);
+
+      let enterARButton = document.getElementById('enterar');
+      let enterVRButton = document.getElementById('entervr');
+
+      document.addEventListener('onARSupportedCheck', function (event) {
+        enterARButton.disabled = !event.detail.supported;
+      }, false);
+      document.addEventListener('onVRSupportedCheck', function (event) {
+        enterVRButton.disabled = !event.detail.supported;
+      }, false);
+
+      enterARButton.addEventListener('click', function (event) {
+        unityInstance.Module.WebXR.toggleAR();
+      }, false);
+      enterVRButton.addEventListener('click', function (event) {
+        unityInstance.Module.WebXR.toggleVR();
+      }, false);
+    </script>
+  
+    <script>
+      // On a computer, while the game wants its own hand cursor (menus and play),
+      // the next click or key press locks the mouse to the game, as on a PC; the
+      // game says when through PointerLock.jslib. Not while in VR.
+      function lockMouse(event) {
+        var canvas = document.getElementById("unity-canvas");
+        if (!window.baldiWantsPointerLock || document.pointerLockElement === canvas || !canvas.requestPointerLock) return;
+        if (event.type === "mousedown" && event.target !== canvas) return;
+        Promise.resolve(canvas.requestPointerLock()).catch(function () {});
+      }
+      document.addEventListener("mousedown", lockMouse, true);
+      document.addEventListener("keydown", lockMouse, true);
+    </script>
+  </body>
+</html>
