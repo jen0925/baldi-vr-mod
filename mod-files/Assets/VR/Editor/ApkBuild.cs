@@ -86,4 +86,35 @@ public static class ApkBuild
         Debug.Log($"Quest APK build: {report.summary.result}, {report.summary.totalErrors} errors -> {Output}");
         if (Application.isBatchMode) EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
     }
+
+    // The loading-screen study app: the same game with LoadForever switched
+    // on, as its own app ("Baldi Loading Screen") so it sits beside the real
+    // one instead of replacing it. Everything is put back afterwards.
+    [MenuItem("Baldi VR/Build loading screen study APK")]
+    public static void BuildLoadForever()
+    {
+        Setup();
+        string defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Android);
+        string name = PlayerSettings.productName;
+        string id = PlayerSettings.GetApplicationIdentifier(BuildTargetGroup.Android);
+        const string output = "../../Build/apk/BaldiLoadingScreen.apk";
+        BuildReport report;
+        try
+        {
+            PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Android, (defines.Length > 0 ? defines + ";" : "") + "BALDI_LOAD_FOREVER");
+            PlayerSettings.productName = "Baldi Loading Screen";
+            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.jen.baldivr.loading");
+            string[] scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
+            Directory.CreateDirectory(Path.GetDirectoryName(output));
+            report = BuildPipeline.BuildPlayer(scenes, output, BuildTarget.Android, BuildOptions.None);
+        }
+        finally
+        {
+            PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Android, defines);
+            PlayerSettings.productName = name;
+            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, id);
+        }
+        Debug.Log($"Loading screen study build: {report.summary.result}, {report.summary.totalErrors} errors -> {output}");
+        if (Application.isBatchMode) EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
+    }
 }

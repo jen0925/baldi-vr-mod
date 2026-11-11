@@ -531,19 +531,13 @@ public static class VRRig
     // The loading screen (Jen's son): the game's own "L O A D" (its words,
     // font, size and colour, copied from the loading screen) floats in the
     // middle of the view, as big as it is on the game's screen; and while it
-    // shows, the headset draws sharper than usual - the screen is simple, so
-    // the extra pixels cost nothing that shows.
+    // shows, the headset draws extra sharp (HeadsetSpeed) - the screen is
+    // simple, so the extra pixels cost nothing that shows.
     private static TMPro.TextMeshPro loadWord;
-    private const float LoadingSharpness = 1.7f;   // times the headset's usual resolution
-    private static bool sharpened;
 
     private static void ShowLoadWord(bool show)
     {
-        if (show != sharpened)
-        {
-            sharpened = show;
-            UnityEngine.XR.XRSettings.eyeTextureResolutionScale = show ? LoadingSharpness : 1f;
-        }
+        HeadsetSpeed.Loading = show;
         if (!show)
         {
             if (loadWord != null && loadWord.gameObject.activeSelf) loadWord.gameObject.SetActive(false);
