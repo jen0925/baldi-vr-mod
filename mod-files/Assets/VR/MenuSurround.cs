@@ -64,6 +64,8 @@ public static class MenuSurround
                 high = Vector2.Max(high, corner);
             }
             headsMaterial.mainTexture = face.texture;
+            // Crisp pixel art in the headset, never smoothed.
+            face.texture.filterMode = FilterMode.Point;
             headsMaterial.SetVector("_Rect", new Vector4(low.x, low.y, high.x - low.x, high.y - low.y));
         }
         // where the game's ClassicLoadScreen has slid and bobbed the faces to

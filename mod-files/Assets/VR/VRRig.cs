@@ -439,6 +439,7 @@ public static class VRRig
         {
             Cover3D.Update(screen as RectTransform, false);
             MenuSurround.Loading(Vector3.zero, UILayer, false);
+            ShowLoadWord(false);
             if (fadeBall != null && fadeBall.activeSelf) fadeBall.SetActive(false);
             screenImage.enabled = true;
             // Coming in from the loading screen, its heads stay all round the
@@ -516,6 +517,7 @@ public static class VRRig
             // white, with no flat screen. Otherwise it is the original loading
             // screen on the floating screen.
             bool loading = MenuSurround.Loading(new Vector3(0f, 5000f + EyeHeight, 0f), UILayer, FullVR);
+            ShowLoadWord(loading);
             screenImage.enabled = !loading;
             // Black round the launcher, white round the menus, all the way round.
             bool menus = SceneManager.GetActiveScene().name == "MainMenu";
@@ -524,6 +526,54 @@ public static class VRRig
             FadeAround(around);
             Cover3D.Update(screen as RectTransform, false);   // the plain original launcher
         }
+    }
+
+    // The loading screen (Jen's son): the game's own "L O A D" (its words,
+    // font, size and colour, copied from the loading screen) floats in the
+    // middle of the view, as big as it is on the game's screen; and while it
+    // shows, the headset draws sharper than usual - the screen is simple, so
+    // the extra pixels cost nothing that shows.
+    private static TMPro.TextMeshPro loadWord;
+    private const float LoadingSharpness = 1.7f;   // times the headset's usual resolution
+    private static bool sharpened;
+
+    private static void ShowLoadWord(bool show)
+    {
+        if (show != sharpened)
+        {
+            sharpened = show;
+            UnityEngine.XR.XRSettings.eyeTextureResolutionScale = show ? LoadingSharpness : 1f;
+        }
+        if (!show)
+        {
+            if (loadWord != null && loadWord.gameObject.activeSelf) loadWord.gameObject.SetActive(false);
+            return;
+        }
+        if (loadWord == null)
+        {
+            GameObject screen = GameObject.Find("LoadingScreen");
+            Transform words = screen != null ? screen.transform.Find("Text/Text1") : null;
+            TMPro.TMP_Text original = words != null ? words.GetComponent<TMPro.TMP_Text>() : null;
+            if (original == null) return;
+            loadWord = new GameObject("VR Load Word").AddComponent<TMPro.TextMeshPro>();
+            Object.DontDestroyOnLoad(loadWord.gameObject);
+            loadWord.font = original.font;
+            loadWord.fontSharedMaterial = original.fontSharedMaterial;
+            loadWord.text = original.text;
+            loadWord.color = original.color;
+            loadWord.characterSpacing = original.characterSpacing;
+            loadWord.alignment = TMPro.TextAlignmentOptions.Center;
+            loadWord.enableWordWrapping = false;
+            // The game's 36 on its 480-wide screen, at the screen's size and distance.
+            loadWord.fontSize = original.fontSize * MetresPerUnit * 10f;
+            loadWord.rectTransform.sizeDelta = new Vector2(4f, 1f);
+            loadWord.gameObject.layer = UILayer;
+        }
+        Transform view = eyes != null ? eyes.transform : head;
+        if (loadWord.transform.parent != view) loadWord.transform.SetParent(view, false);
+        loadWord.transform.localPosition = new Vector3(0f, 0f, ScreenDistance);
+        loadWord.transform.localRotation = Quaternion.identity;
+        if (!loadWord.gameObject.activeSelf) loadWord.gameObject.SetActive(true);
     }
 
     // When the colour all round changes (black round the launcher, white round
